@@ -56,7 +56,7 @@ const Home = async () => {
         <div className="interviews-section">
         {hasUpcomingInterviews ? (
             latestInterviews?.map((interview) => (
-              <InterviewCard {...interview} key={interview.id} />
+              <InterviewCard {...interview} key={interview.id} userId={user?.id}/>
             ))
           ) : (
             <p>There are no new interviews available</p>

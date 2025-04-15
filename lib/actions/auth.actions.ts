@@ -114,5 +114,17 @@ export async function isAuthenticated() {
   return !!user;
 }
 
+export async function logOut(){
+  const cookieStore = await cookies();
 
+  cookieStore.set("session", "", {
+    maxAge: 0, 
+    path: "/",
+  });
+  
+  return {
+    success: true,
+    message: "Logged out successfully",
+  };
+}
 
