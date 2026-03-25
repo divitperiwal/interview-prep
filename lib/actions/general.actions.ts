@@ -3,7 +3,7 @@
 import { feedbackSchema } from "@/constants";
 import { db } from "@/firebase/admin"; 
 import { google } from "@ai-sdk/google";
-import { generateObject } from "ai";
+import { generateText, Output } from "ai";
 
 export async function getInterviewsByUserId(
   userId: string
@@ -56,19 +56,11 @@ export async function createFeedback(params: CreateFeedbackParams) {
       )
       .join("");
 
-    const {
-      object: {
-        totalScore,
-        categoryScores,
-        strengths,
-        areasForImprovement,
-        finalAssessment,
-      },
-    } = await generateObject({
-      model: google("gemini-2.0-flash-001", {
+    const result = await generateText({
+      model: google("gemini-2.5-flash", {
         structuredOutputs: false,
       }),
-      schema: feedbackSchema,
+      output: Output.object({ schema: feedbackSchema }),
       prompt: `
       You are an AI Interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories. Be thorough in your analysis. Don't be lenient with the candidate. If there are mistakes or areas for improvement , point them out.
       Transcript :
@@ -84,6 +76,14 @@ export async function createFeedback(params: CreateFeedbackParams) {
       system:
         "You are a professional interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories",
     });
+
+    const {
+      totalScore,
+      categoryScores,
+      strengths,
+      areasForImprovement,
+      finalAssessment,
+    } = result.output;
 
     const feedback = await db.collection("feedback").add({
       interviewId,

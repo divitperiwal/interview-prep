@@ -67,7 +67,7 @@ const InterviewCard = async ({
             className="btn-primary text-sm"
             loadingLabel="Opening..."
           >
-            {feedback ? "View Feedback" : "Start"}
+            {feedback ? "Check Feedback" : "Start"}
           </LoadingLinkButton>
         </div>
       </div>

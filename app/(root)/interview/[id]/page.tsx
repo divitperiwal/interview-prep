@@ -1,4 +1,4 @@
-import { getInterviewById } from "@/lib/actions/general.actions";
+import { getFeedbackByInterviewId, getInterviewById } from "@/lib/actions/general.actions";
 import { redirect } from "next/navigation";
 import React from "react";
 import Image from "next/image";
@@ -13,6 +13,17 @@ const Page = async ({ params }: RouteParams) => {
   const interview = await getInterviewById(id);
 
   if (!interview) redirect("/");
+
+  if (user?.id) {
+    const feedback = await getFeedbackByInterviewId({
+      interviewId: id,
+      userId: user.id,
+    });
+
+    if (feedback) {
+      redirect(`/interview/${id}/feedback`);
+    }
+  }
 
   return (
     <>
