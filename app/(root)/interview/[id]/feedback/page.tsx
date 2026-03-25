@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import LoadingLinkButton from "@/components/LoadingLinkButton";
 import { getCurrentUser } from "@/lib/actions/auth.actions";
 import {
   getFeedbackByInterviewId,
@@ -6,7 +6,6 @@ import {
 } from "@/lib/actions/general.actions";
 import dayjs from "dayjs";
 import Image from "next/image";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import React from "react";
 
@@ -24,19 +23,19 @@ const Page = async ({ params }: RouteParams) => {
   return (
     <section className="section-feedback">
       <div className="flex flex-row justify-center">
-        <h1 className="text-4xl font-semibold">
+        <h1 className="text-4xl font-semibold text-center">
           Feedback on the Interview -{" "}
           <span className="capitalize">{interview.role}</span> Interview
         </h1>
       </div>
 
       <div className="flex flex-row justify-center">
-        <div className="flex flex-row gap-5">
+        <div className="flex flex-row gap-5 rounded-2xl border border-white/10 bg-white/5 px-5 py-3 max-sm:flex-col">
           <div className="flex flex-row gap-2 items-center">
             <Image src="/star.svg" width={22} height={22} alt="star" />
             <p>
               Overall Impression :{" "}
-              <span className="text-primary-200 font-bold">
+              <span className="text-white font-bold">
                 {feedback?.totalScore}
               </span>
               /100
@@ -54,7 +53,7 @@ const Page = async ({ params }: RouteParams) => {
         </div>
         </div>
 
-        <hr />
+        <hr className="border-white/10" />
         <p>{feedback?.finalAssessment}</p>
 
         <div className="flex flex-col gap-4">
@@ -88,22 +87,12 @@ const Page = async ({ params }: RouteParams) => {
         </div>
 
         <div className="buttons">
-          <Button className="btn-secondary flex-1">
-            <Link href="/" className="flex w-full justify-center">
-              <p className="text-sm font-semibold text-primary-200 text-center">
-                {" "}
-                Back to Dashboard
-              </p>
-            </Link>
-          </Button>
-          <Button className="btn-primary flex-1">
-            <Link href={`/interview/${id}`} className="flex w-full justify-center">
-              <p className="text-sm font-semibold text-black text-center">
-                {" "}
-                Retake Interview
-              </p>
-            </Link>
-          </Button>
+          <LoadingLinkButton href="/" className="btn-secondary flex-1" loadingLabel="Opening...">
+            <p className="text-sm font-semibold text-white text-center">Back to Dashboard</p>
+          </LoadingLinkButton>
+          <LoadingLinkButton href={`/interview/${id}`} className="btn-primary flex-1" loadingLabel="Opening...">
+            <p className="text-sm font-semibold text-black text-center">Retake Interview</p>
+          </LoadingLinkButton>
           
         </div>
     </section>

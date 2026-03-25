@@ -16,7 +16,7 @@ const Page = async ({ params }: RouteParams) => {
 
   return (
     <>
-      <div className="flex flex-row gap-4 justify-between">
+      <div className="flex flex-row gap-4 justify-between p-4 rounded-2xl border border-white/10 bg-white/5">
         <div className="flex flex-row gap-4 items-center max-sm:flex-col">
           <div className="flex flex-row gap-4 items-center">
             <Image
@@ -32,7 +32,7 @@ const Page = async ({ params }: RouteParams) => {
           <DisplayTechIcons techStack={interview.techstack} />
         </div>
 
-        <p className="bg-dark-200 px-4 py-2 rounded-lg h-fit capitalize">{interview.type}</p>
+        <p className="bg-white/10 border border-white/15 px-4 py-2 rounded-lg h-fit capitalize">{interview.type}</p>
       </div>
 
       <Agent userName={user?.name || ''} userId={user?.id} interviewId={id} type="interview" questions={interview.questions}/>

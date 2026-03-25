@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,21 +15,26 @@ import { useRouter } from "next/navigation";
 
 const DropDownMenu = ({ userName }: { userName: string }) => {
   const router = useRouter();
+  const [actionPending, setActionPending] = useState<"profile" | "logout" | null>(null);
+
   const handleLogout = async () => {
+    setActionPending("logout");
     const result = await logOut();
     if (!result?.success) {
       console.error(result?.message);
     }
     router.push("/sign-in");
   };
+
   const handleProfile = () => {
+    setActionPending("profile");
     router.push("/profile");
   };
 
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger>
+        <DropdownMenuTrigger className="rounded-full border border-white/15 bg-white/5 p-1 hover:bg-white/10 transition-colors">
           <Image
             src={"/profile.svg"}
             alt="profile"
@@ -38,21 +43,26 @@ const DropDownMenu = ({ userName }: { userName: string }) => {
             className="rounded-full cursor-pointer"
           />
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
+        <DropdownMenuContent className="bg-[#111111] border-white/15 text-white">
           <DropdownMenuLabel>{userName}</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem className="cursor-pointer" onClick={handleProfile}>
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={handleProfile}
+            disabled={actionPending !== null}
+          >
             <Image src={"/person.svg"} alt="person" width={16} height={16} />
-            <span>Profile</span>
+            {actionPending === "profile" && <span className="spinner" aria-hidden="true" />}
+            <span>{actionPending === "profile" ? "Opening..." : "Profile"}</span>
           </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer" onClick={handleLogout}>
-            <section
-              className="flex flex-row items-center gap-2"
-              onClick={handleLogout}
-            >
-              <Image src={"/logout.svg"} alt="logout" width={16} height={16} />
-              <span>Log out</span>
-            </section>
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={handleLogout}
+            disabled={actionPending !== null}
+          >
+            <Image src={"/logout.svg"} alt="logout" width={16} height={16} />
+            {actionPending === "logout" && <span className="spinner" aria-hidden="true" />}
+            <span>{actionPending === "logout" ? "Logging out..." : "Log out"}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

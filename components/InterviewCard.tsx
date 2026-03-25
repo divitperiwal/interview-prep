@@ -1,10 +1,9 @@
 import { getRandomInterviewCover } from "@/lib/utils";
 import dayjs from "dayjs";
 import Image from "next/image";
-import { Button } from "./ui/button";
-import Link from "next/link";
 import DisplayTechIcons from "./DisplayTechIcons";
 import { getFeedbackByInterviewId } from "@/lib/actions/general.actions";
+import LoadingLinkButton from "./LoadingLinkButton";
 
 const InterviewCard = async ({
   id,
@@ -19,56 +18,57 @@ const InterviewCard = async ({
       ? await getFeedbackByInterviewId({ interviewId: id, userId })
       : null;
   const normalizedType = /mix/gi.test(type) ? "Mixed" : type;
+  const fallbackDate = "1970-01-01T00:00:00.000Z";
   const formattedDate = dayjs(
-    feedback?.createdAt || createdAt || Date.now()
+    feedback?.createdAt || createdAt || fallbackDate
   ).format("MMM D, YYYY");
   return (
-    <div className="card-border w-[360px] max-sm:w-full min-h-96">
+    <div className="card-border w-full min-h-96 animate-fadeIn transition-all duration-300 hover:shadow-xl">
       <div className="card-interview">
         <div>
-          <div className="absolute top-0 right-0 w-fit px-4 py-2 rounded-bl-lg bg-light-600">
-            <p className="badge-text">{normalizedType}</p>
+          <div className="absolute top-0 right-0 w-fit px-4 py-2 rounded-bl-lg bg-white/10 border-l border-b border-white/15 backdrop-blur-sm">
+            <p className="badge-text text-xs font-medium">{normalizedType}</p>
           </div>
           <Image
             src={getRandomInterviewCover()}
             alt="cover"
             width={90}
             height={90}
-            className="rounded-full object-fit size-[90px]"
+            className="rounded-full object-fit size-[90px] ring-2 ring-white/10"
           />
-          <h3 className="mt-5 capitalize">{role} Interview</h3>
+          <h3 className="mt-5 capitalize text-white">{role} Interview</h3>
 
-          <div className="flex flex-row gap-5 mt-3">
-            <div className="flex flex-row gap-2">
+          <div className="flex flex-row gap-5 mt-4 text-sm text-muted-foreground">
+            <div className="flex flex-row gap-2 items-center">
               <Image
                 src="/calendar.svg"
                 alt="calendar"
-                width={22}
-                height={22}
+                width={16}
+                height={16}
               />
               <p>{formattedDate}</p>
             </div>
 
             <div className="flex flex-row gap-2 items-center">
-              <Image src="/star.svg" alt="star" width={22} height={22} />
+              <Image src="/star.svg" alt="star" width={16} height={16} />
               <p>{feedback?.totalScore || "---"}/100</p>
             </div>
           </div>
 
-          <p className="line-clamp-2 mt-5">
+          <p className="line-clamp-2 mt-5 text-sm leading-relaxed text-muted-foreground">
             {feedback?.finalAssessment ||
-              "You haven't take the interview yet. Take it now to improve your skills."}
+              "Take this interview to receive detailed feedback on your performance."}
           </p>
         </div>
-        <div className="flex flex-row justify-between">
+        <div className="flex flex-row justify-between items-center gap-4">
           <DisplayTechIcons techStack={techstack} />
-          <Button className="btn-primary">
-            <Link
-              href={feedback ? `/interview/${id}/feedback` : `/interview/${id}`}
-            >
-              {feedback ? "Check Feedback" : "View Interview"}
-            </Link>
-          </Button>
+          <LoadingLinkButton
+            href={feedback ? `/interview/${id}/feedback` : `/interview/${id}`}
+            className="btn-primary text-sm"
+            loadingLabel="Opening..."
+          >
+            {feedback ? "View Feedback" : "Start"}
+          </LoadingLinkButton>
         </div>
       </div>
     </div>

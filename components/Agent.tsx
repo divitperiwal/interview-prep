@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { vapi } from "@/lib/vapi.sdk";
 import { interviewer } from "@/constants";
 import { createFeedback } from "@/lib/actions/general.actions";
@@ -63,7 +63,7 @@ const Agent = ({
     };
   }, []);
 
-  const handleGenerateFeedback = async (messages: SavedMessage[]) => {
+  const handleGenerateFeedback = useCallback(async (messages: SavedMessage[]) => {
     console.log("Generate Feedback Here.");
 
     const { success, feedbackId : id } = await createFeedback({
@@ -78,7 +78,7 @@ const Agent = ({
       console.log("Error generating feedback");
       router.push("/");
     }
-  };
+  }, [interviewId, router, userId]);
 
   useEffect(() => {
     if (callStatus === CallStatus.FINISHED) {
@@ -88,32 +88,37 @@ const Agent = ({
         handleGenerateFeedback(messages);
       }
     }
-  }, [messages, callStatus, type, userId]);
+  }, [callStatus, handleGenerateFeedback, messages, router, type]);
 
   const handleCall = async () => {
     setCallStatus(CallStatus.CONNECTING);
 
-    if (type === "generate") {
-      await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
-        variableValues: {
-          username: userName,
-          userid: userId,
-        },
-      });
-    } else {
-      let formattedQuestions = '';
-      if (questions) {
-        formattedQuestions = questions
-          .map((question) => `-${question}`)
-          .join("\n");
-      }
-
-      await vapi.start(interviewer, {
-        variableValues:{
-          questions: formattedQuestions,
-
+    try {
+      if (type === "generate") {
+        await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
+          variableValues: {
+            username: userName,
+            userid: userId,
+          },
+        });
+      } else {
+        let formattedQuestions = '';
+        if (questions) {
+          formattedQuestions = questions
+            .map((question) => `-${question}`)
+            .join("\n");
         }
-      })
+
+        await vapi.start(interviewer, {
+          variableValues:{
+            questions: formattedQuestions,
+
+          }
+        })
+      }
+    } catch (error) {
+      console.log("Error starting call", error);
+      setCallStatus(CallStatus.INACTIVE);
     }
   };
 
@@ -123,8 +128,8 @@ const Agent = ({
   };
 
   const latestMessage = messages[messages.length - 1]?.content;
-  const isCallInactiveOrFinished =
-    callStatus === CallStatus.INACTIVE || callStatus === CallStatus.FINISHED;
+  const isCallInactiveOrFinished = callStatus === CallStatus.INACTIVE;
+  const isProcessing = callStatus === CallStatus.FINISHED;
 
   return (
     <>
@@ -149,7 +154,7 @@ const Agent = ({
               alt="user"
               width={540}
               height={540}
-              className="obeject-cover rounded-full size-[120px]"
+              className="object-cover rounded-full size-[120px]"
             />
             <h3>{userName}</h3>
           </div>
@@ -174,19 +179,34 @@ const Agent = ({
 
       <div className="w-full flex justify-center">
         {callStatus !== "ACTIVE" ? (
-          <button className="relative btn-call" onClick={handleCall}>
+          <button
+            className="relative btn-call"
+            onClick={handleCall}
+            disabled={callStatus === "CONNECTING" || isProcessing}
+            aria-busy={callStatus === "CONNECTING" || isProcessing}
+          >
             <span
               className={cn(
-                "absolute animate-ping rouned-full opacity-75",
+                "absolute animate-ping rounded-full opacity-75",
                 callStatus !== "CONNECTING" && "hidden"
               )}
             />
 
-            <span>{isCallInactiveOrFinished ? "Call" : ". . ."}</span>
+            {(callStatus === "CONNECTING" || isProcessing) && (
+              <span className="spinner" aria-hidden="true" />
+            )}
+            <span>
+              {isProcessing
+                ? "Processing..."
+                : isCallInactiveOrFinished
+                  ? "Call"
+                  : ". . ."}
+            </span>
           </button>
         ) : (
-          <button className="btn-disconnect" onClick={handleDisconnect}>
-            End
+          <button className="btn-disconnect" onClick={handleDisconnect} disabled={isProcessing} aria-busy={isProcessing}>
+            {isProcessing && <span className="spinner" aria-hidden="true" />}
+            <span>{isProcessing ? "Processing..." : "End"}</span>
           </button>
         )}
       </div>
